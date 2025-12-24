@@ -35,7 +35,7 @@
         padding: 20px 30px;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         z-index: 1000;
-        display: none;
+        display: block;
         animation: slideUp 0.4s ease;
       }
 
@@ -139,7 +139,7 @@
     </style>
   </head>
   <body>
-    <video id="video" loop muted playsinline>
+    <video id="video" loop playsinline preload="auto">
       <source src="suca.mp4" type="video/mp4" />
     </video>
 
@@ -168,46 +168,49 @@
 
       function startVideo() {
         if (!videoStarted) {
+          videoStarted = true;
           video.muted = false;
+          video.volume = 1.0;
+
           video
             .play()
             .then(() => {
-              videoStarted = true;
-              banner.style.display = "none";
+              console.log("Video avviato con successo");
+              setTimeout(() => {
+                banner.style.display = "none";
+              }, 300);
             })
             .catch((err) => {
               console.log("Errore avvio video:", err);
+              videoStarted = false;
             });
         }
       }
 
-      // Tentativo di avvio automatico
-      video
-        .play()
-        .then(() => {
-          // Se parte subito, togli il mute dopo un attimo
-          setTimeout(() => {
-            video.muted = false;
-            videoStarted = true;
-          }, 100);
-        })
-        .catch(() => {
-          // Se non parte, mostra il banner cookie
-          banner.style.display = "block";
-        });
+      // Aspetta che il video sia caricato
+      video.addEventListener("loadeddata", () => {
+        console.log("Video caricato");
+      });
+
+      video.addEventListener("canplaythrough", () => {
+        console.log("Video pronto per essere riprodotto");
+      });
 
       // Tutti i bottoni del banner avviano il video
       document.querySelectorAll(".cookie-btn").forEach((btn) => {
-        btn.addEventListener("click", startVideo);
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          startVideo();
+        });
       });
 
       // Anche il click ovunque sul banner avvia il video
       banner.addEventListener("click", startVideo);
 
       // Fallback: qualsiasi interazione con la pagina avvia il video
-      document.addEventListener("click", startVideo, { once: true });
-      document.addEventListener("touchstart", startVideo, { once: true });
-      document.addEventListener("keydown", startVideo, { once: true });
+      document.addEventListener("click", startVideo);
+      document.addEventListener("touchstart", startVideo);
+      document.addEventListener("keydown", startVideo);
     </script>
   </body>
 </html>
