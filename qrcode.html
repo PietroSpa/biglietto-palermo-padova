@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generatore QR Code - Client Side</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: white;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 30px;
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+      }
+
+      .panel {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .section-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      .type-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+
+      .type-btn {
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .type-btn:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .type-btn.active {
+        border-color: #667eea;
+        background: #f0f4ff;
+      }
+
+      .type-icon {
+        font-size: 24px;
+      }
+
+      .type-label {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="url"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .color-input {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      input[type="color"] {
+        width: 50px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      #qrcode-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 350px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      #qrcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .placeholder {
+        text-align: center;
+        color: #999;
+      }
+
+      .placeholder-icon {
+        font-size: 64px;
+        margin-bottom: 10px;
+        opacity: 0.3;
+      }
+
+      .download-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+      }
+
+      .download-btn {
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .download-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .download-btn:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-png {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .btn-jpg {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+
+      .btn-svg {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 1.8em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔲 Generatore QR Code</h1>
+      <p class="subtitle">Crea QR code personalizzati</p>
+
+      <div class="main-grid">
+        <!-- Pannello Sinistro -->
+        <div class="panel">
+          <div class="section-title">Tipo di QR Code</div>
+          <div class="type-selector">
+            <button class="type-btn active" data-type="text">
+              <span class="type-icon">📝</span>
+              <span class="type-label">Testo</span>
+            </button>
+            <button class="type-btn" data-type="url">
+              <span class="type-icon">🔗</span>
+              <span class="type-label">URL</span>
+            </button>
+            <button class="type-btn" data-type="email">
+              <span class="type-icon">✉️</span>
+              <span class="type-label">Email</span>
+            </button>
+            <button class="type-btn" data-type="phone">
+              <span class="type-icon">📞</span>
+              <span class="type-label">Telefono</span>
+            </button>
+            <button class="type-btn" data-type="sms">
+              <span class="type-icon">💬</span>
+              <span class="type-label">SMS</span>
+            </button>
+            <button class="type-btn" data-type="wifi">
+              <span class="type-icon">📶</span>
+              <span class="type-label">WiFi</span>
+            </button>
+          </div>
+
+          <!-- Input Testo -->
+          <div id="input-text" class="input-container">
+            <div class="input-group">
+              <label>Contenuto</label>
+              <textarea
+                id="text-content"
+                placeholder="Inserisci il tuo testo..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Input URL -->
+          <div id="input-url" class="input-container hidden">
+            <div class="input-group">
+              <label>URL</label>
+              <input
+                type="url"
+                id="url-content"
+                placeholder="https://esempio.com"
+              />
+            </div>
+          </div>
+
+          <!-- Input Email -->
+          <div id="input-email" class="input-container hidden">
+            <div class="input-group">
+              <label>Email destinatario</label>
+              <input
+                type="email"
+                id="email-to"
+                placeholder="esempio@email.com"
+              />
+            </div>
+            <div class="input-group">
+              <label>Oggetto</label>
+              <input
+                type="text"
+                id="email-subject"
+                placeholder="Oggetto dell'email"
+              />
+            </div>
+            <div class="input-group">
+              <label>Messaggio</label>
+              <textarea
+                id="email-body"
+                placeholder="Corpo dell'email"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Input Telefono -->
+          <div id="input-phone" class="input-container hidden">
+            <div class="input-group">
+              <label>Numero di telefono</label>
+              <input
+                type="tel"
+                id="phone-number"
+                placeholder="+39 123 456 7890"
+              />
+            </div>
+          </div>
+
+          <!-- Input SMS -->
+          <div id="input-sms" class="input-container hidden">
+            <div class="input-group">
+              <label>Numero di telefono</label>
+              <input
+                type="tel"
+                id="sms-number"
+                placeholder="+39 123 456 7890"
+              />
+            </div>
+            <div class="input-group">
+              <label>Messaggio</label>
+              <textarea
+                id="sms-message"
+                placeholder="Testo del messaggio"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Input WiFi -->
+          <div id="input-wifi" class="input-container hidden">
+            <div class="input-group">
+              <label>Nome rete (SSID)</label>
+              <input type="text" id="wifi-ssid" placeholder="Nome WiFi" />
+            </div>
+            <div class="input-group">
+              <label>Password</label>
+              <input type="text" id="wifi-password" placeholder="Password" />
+            </div>
+            <div class="input-group">
+              <label>Tipo di sicurezza</label>
+              <select id="wifi-encryption">
+                <option value="WPA">WPA/WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">Nessuna</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>
+                <input type="checkbox" id="wifi-hidden" /> Rete nascosta
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="input-group">
+              <label>Dimensione: <span id="size-value">256</span>px</label>
+              <input
+                type="range"
+                id="qr-size"
+                min="128"
+                max="512"
+                step="32"
+                value="256"
+              />
+            </div>
+            <div class="input-group">
+              <label>Colori</label>
+              <div style="display: flex; gap: 10px">
+                <div class="color-input">
+                  <input type="color" id="fg-color" value="#000000" />
+                  <span style="font-size: 12px">QR</span>
+                </div>
+                <div class="color-input">
+                  <input type="color" id="bg-color" value="#ffffff" />
+                  <span style="font-size: 12px">Sfondo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pannello Destro -->
+        <div class="panel">
+          <div class="section-title">Anteprima</div>
+          <div id="qrcode-container">
+            <div class="placeholder">
+              <div class="placeholder-icon">📱</div>
+              <p>Il QR code apparirà qui</p>
+            </div>
+          </div>
+
+          <div class="section-title">Download</div>
+          <div class="download-grid">
+            <button class="download-btn btn-png" id="download-png" disabled>
+              <span style="font-size: 24px">⬇️</span>
+              <span>PNG</span>
+            </button>
+            <button class="download-btn btn-jpg" id="download-jpg" disabled>
+              <span style="font-size: 24px">⬇️</span>
+              <span>JPG</span>
+            </button>
+            <button class="download-btn btn-svg" id="download-svg" disabled>
+              <span style="font-size: 24px">⬇️</span>
+              <span>SVG</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentType = "text";
+      let qrCode = null;
+      let currentData = "";
+
+      // Elementi DOM
+      const typeButtons = document.querySelectorAll(".type-btn");
+      const inputContainers = document.querySelectorAll(".input-container");
+      const qrContainer = document.getElementById("qrcode-container");
+      const sizeSlider = document.getElementById("qr-size");
+      const sizeValue = document.getElementById("size-value");
+      const fgColor = document.getElementById("fg-color");
+      const bgColor = document.getElementById("bg-color");
+
+      // Gestione cambio tipo
+      typeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          typeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentType = btn.dataset.type;
+
+          inputContainers.forEach((container) =>
+            container.classList.add("hidden")
+          );
+          document
+            .getElementById(`input-${currentType}`)
+            .classList.remove("hidden");
+
+          generateQRCode();
+        });
+      });
+
+      // Gestione slider dimensione
+      sizeSlider.addEventListener("input", (e) => {
+        sizeValue.textContent = e.target.value;
+        generateQRCode();
+      });
+
+      // Gestione cambio colori
+      fgColor.addEventListener("change", generateQRCode);
+      bgColor.addEventListener("change", generateQRCode);
+
+      // Aggiungi listener a tutti gli input
+      document.querySelectorAll("input, textarea, select").forEach((input) => {
+        input.addEventListener("input", generateQRCode);
+      });
+
+      function getQRData() {
+        switch (currentType) {
+          case "text":
+            return document.getElementById("text-content").value;
+
+          case "url":
+            return document.getElementById("url-content").value;
+
+          case "email":
+            const emailTo = document.getElementById("email-to").value;
+            const emailSubject = document.getElementById("email-subject").value;
+            const emailBody = document.getElementById("email-body").value;
+            if (!emailTo) return "";
+            return `mailto:${emailTo}?subject=${encodeURIComponent(
+              emailSubject
+            )}&body=${encodeURIComponent(emailBody)}`;
+
+          case "phone":
+            const phone = document.getElementById("phone-number").value;
+            return phone ? `tel:${phone}` : "";
+
+          case "sms":
+            const smsNumber = document.getElementById("sms-number").value;
+            const smsMessage = document.getElementById("sms-message").value;
+            if (!smsNumber) return "";
+            return `smsto:${smsNumber}:${smsMessage}`;
+
+          case "wifi":
+            const ssid = document.getElementById("wifi-ssid").value;
+            const password = document.getElementById("wifi-password").value;
+            const encryption = document.getElementById("wifi-encryption").value;
+            const hidden = document.getElementById("wifi-hidden").checked;
+            if (!ssid) return "";
+            return `WIFI:T:${encryption};S:${ssid};P:${password};H:${
+              hidden ? "true" : "false"
+            };;`;
+
+          default:
+            return "";
+        }
+      }
+
+      function generateQRCode() {
+        const data = getQRData();
+
+        if (!data) {
+          qrContainer.innerHTML =
+            '<div class="placeholder"><div class="placeholder-icon">📱</div><p>Il QR code apparirà qui</p></div>';
+          document
+            .querySelectorAll(".download-btn")
+            .forEach((btn) => (btn.disabled = true));
+          return;
+        }
+
+        currentData = data;
+        const size = parseInt(sizeSlider.value);
+
+        qrContainer.innerHTML = '<div id="qrcode"></div>';
+
+        qrCode = new QRCode(document.getElementById("qrcode"), {
+          text: data,
+          width: size,
+          height: size,
+          colorDark: fgColor.value,
+          colorLight: bgColor.value,
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+
+        document
+          .querySelectorAll(".download-btn")
+          .forEach((btn) => (btn.disabled = false));
+      }
+
+      // Download PNG
+      document.getElementById("download-png").addEventListener("click", () => {
+        const canvas = document.querySelector("#qrcode canvas");
+        if (!canvas) return;
+
+        const link = document.createElement("a");
+        link.download = "qrcode.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+
+      // Download JPG
+      document.getElementById("download-jpg").addEventListener("click", () => {
+        const canvas = document.querySelector("#qrcode canvas");
+        if (!canvas) return;
+
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const ctx = tempCanvas.getContext("2d");
+
+        ctx.fillStyle = bgColor.value;
+        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        ctx.drawImage(canvas, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = "qrcode.jpg";
+        link.href = tempCanvas.toDataURL("image/jpeg", 0.95);
+        link.click();
+      });
+
+      // Download SVG
+      document.getElementById("download-svg").addEventListener("click", () => {
+        const canvas = document.querySelector("#qrcode canvas");
+        if (!canvas) return;
+
+        const size = parseInt(sizeSlider.value);
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx.getImageData(0, 0, size, size);
+
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
+        svg += `<rect width="${size}" height="${size}" fill="${bgColor.value}"/>`;
+
+        const pixelSize = 1;
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            const i = (y * size + x) * 4;
+            const r = imageData.data[i];
+            const g = imageData.data[i + 1];
+            const b = imageData.data[i + 2];
+
+            if (r < 128 || g < 128 || b < 128) {
+              svg += `<rect x="${x}" y="${y}" width="${pixelSize}" height="${pixelSize}" fill="${fgColor.value}"/>`;
+            }
+          }
+        }
+
+        svg += "</svg>";
+
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = "qrcode.svg";
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+    </script>
+    ```
+  </body>
+</html>
